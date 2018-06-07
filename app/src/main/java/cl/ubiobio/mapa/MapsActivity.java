@@ -67,24 +67,6 @@ public class MapsActivity extends AppCompatActivity implements LocationSource, O
     private ArrayList<Farmacia> farmaciasDeTurno;
     private Farmacia farmaciaCercana;
 
-    private void busqueda(){
-
-        for(int i=0; i <farmaciasDeTurno.size();i++){
-            //esto es nuevo
-            distanciaFar = distancia(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude(),farmaciasDeTurno.get(i).getLatitud(), farmaciasDeTurno.get(i).getLongitud());
-            if(i==0){
-                menorDistanciaDefinitiva = distancia(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude(),farmaciasDeTurno.get(i).getLatitud(), farmaciasDeTurno.get(i).getLongitud());
-            }
-
-            if (distanciaFar < menorDistanciaDefinitiva) {
-                menorDistanciaDefinitiva = distancia(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude(),farmaciasDeTurno.get(i).getLatitud(), farmaciasDeTurno.get(i).getLongitud());
-                farmaciaCercana = farmaciasDeTurno.get(i); //datos farmacia mas cercana
-
-            }
-        }
-
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -92,17 +74,7 @@ public class MapsActivity extends AppCompatActivity implements LocationSource, O
         farmaciasDeTurno = new ArrayList<>();
         serviceFarmacias();
 
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                switch (v.getId()){
-                    case R.id.fab:
-                        busqueda();
-                        break;
-                }
-            }
-        });
+
         /** mLocationManager gestiona las peticiones de posicion **/
         mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
@@ -123,6 +95,43 @@ public class MapsActivity extends AppCompatActivity implements LocationSource, O
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        FloatingActionButton fab = findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                switch (v.getId()){
+                    case R.id.fab:
+                        for(int i=0; i <farmaciasDeTurno.size();i++){
+                            //esto es nuevo
+                            distanciaFar = distancia(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude(),farmaciasDeTurno.get(i).getLatitud(), farmaciasDeTurno.get(i).getLongitud());
+                            if(i==0){
+                                menorDistanciaDefinitiva = distancia(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude(),farmaciasDeTurno.get(i).getLatitud(), farmaciasDeTurno.get(i).getLongitud());
+                            }
+
+                            if (distanciaFar < menorDistanciaDefinitiva) {
+                                menorDistanciaDefinitiva = distancia(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude(),farmaciasDeTurno.get(i).getLatitud(), farmaciasDeTurno.get(i).getLongitud());
+                                farmaciaCercana = farmaciasDeTurno.get(i); //datos farmacia mas cercana
+
+                            }
+                        }
+                        LatLng desti = new LatLng(farmaciaCercana.getLatitud(), farmaciaCercana.getLongitud());
+
+                        /** en este caso, capturamos la posicion del marcador y la posicion actual del telefono
+                         * e iniciamos el proceso de trazar una ruta **/
+                        LatLng origen = new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude());
+                        String url = obtenerDireccionesURL(origen,desti); //funcion para generar la URL para solicitar la ruta
+
+                        /** Tarea Async para descargar la ruta **/
+                        DownloadTask downloadTask = new DownloadTask();
+                        downloadTask.execute(url);
+
+                        mMap.addMarker(new MarkerOptions().position(desti));
+
+                        break;
+                }
+            }
+        });
 
 
 
