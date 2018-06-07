@@ -1,3 +1,7 @@
+/*INTEGRANTES
+-Ivan Martinez
+-Basthian Henriquez
+-Bastian Escalona*/
 package cl.ubiobio.mapa;
 
 import android.Manifest;
@@ -126,7 +130,7 @@ public class MapsActivity extends AppCompatActivity implements LocationSource, O
                         DownloadTask downloadTask = new DownloadTask();
                         downloadTask.execute(url);
 
-                        mMap.addMarker(new MarkerOptions().position(desti));
+                        mMap.addMarker(new MarkerOptions().position(desti).title(farmaciaCercana.getNombre_farmacia()));
 
                         break;
                 }
